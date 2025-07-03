@@ -12,7 +12,9 @@
       padding: 20px;
       text-align: center;
     }
-    h2 { margin-bottom: 20px; }
+    h2 {
+      margin-bottom: 20px;
+    }
     .btn {
       display: block;
       margin: 10px auto;
@@ -23,17 +25,39 @@
       border: none;
       border-radius: 6px;
       width: 80%;
+      cursor: pointer;
+    }
+    .error {
+      color: red;
+      font-size: 16px;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <h2>🎯 Choose a Quiz</h2>
 
-  <button class="btn" onclick="location.href='https://www.pdfnotes.co/insights-ias-test-series/'">Insights IAS</button>
+  <div id="quiz-buttons" style="display: none;">
+    <button class="btn" onclick="location.href='https://www.pdfnotes.co/insights-ias-test-series/'">INSIGHT IAS</button>
+    <button class="btn" onclick="location.href='https://pdfsdrive1.github.io/quiz-launcher/quiz-math.html'">📐 Math Quiz</button>
+    <button class="btn" onclick="location.href='https://pdfsdrive1.github.io/quiz-launcher/quiz-polity.html'">🏛️ Polity Quiz</button>
+  </div>
 
+  <div id="error-msg" class="error" style="display: none;">
+    ⚠️ Please open this quiz launcher inside the Telegram app.
+  </div>
 
   <script>
-    Telegram.WebApp.expand();
+    Telegram.WebApp.ready();
+
+    if (!Telegram.WebApp.initData || Telegram.WebApp.platform === 'unknown') {
+      // Not inside Telegram WebApp
+      document.getElementById("error-msg").style.display = "block";
+    } else {
+      // Inside Telegram
+      Telegram.WebApp.expand();
+      document.getElementById("quiz-buttons").style.display = "block";
+    }
   </script>
 </body>
 </html>
