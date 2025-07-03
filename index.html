@@ -8,12 +8,15 @@
   <style>
     body {
       font-family: sans-serif;
+      margin: 0;
       background: #f4f4f4;
-      padding: 20px;
       text-align: center;
     }
     h2 {
-      margin-bottom: 20px;
+      padding: 20px;
+      margin: 0;
+      background: #0088cc;
+      color: white;
     }
     .btn {
       display: block;
@@ -24,39 +27,37 @@
       color: white;
       border: none;
       border-radius: 6px;
-      width: 80%;
+      width: 90%;
       cursor: pointer;
     }
-    .error {
-      color: red;
-      font-size: 16px;
-      margin-top: 20px;
+    iframe {
+      width: 100%;
+      height: 100vh;
+      border: none;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h2>🎯 Choose a Quiz</h2>
+  <h2>📚 Choose Your Quiz</h2>
 
-  <div id="quiz-buttons" style="display: none;">
-    <button class="btn" onclick="location.href='https://www.pdfnotes.co/insights-ias-test-series/'">INSIGHT IAS</button>
-    <button class="btn" onclick="location.href='https://pdfsdrive1.github.io/quiz-launcher/quiz-math.html'">📐 Math Quiz</button>
-    <button class="btn" onclick="location.href='https://pdfsdrive1.github.io/quiz-launcher/quiz-polity.html'">🏛️ Polity Quiz</button>
+  <div id="button-area">
+    <button class="btn" onclick="openQuiz('https://www.pdfnotes.co/insights-ias-test-series/')">Insights IAS Test 28</button>
+    <button class="btn" onclick="openQuiz('https://pdfsdrive1.github.io/quiz-launcher/ssc-cgl/')">SSC CGL Test Menu</button>
+    <button class="btn" onclick="openQuiz('https://pdfsdrive1.github.io/quizzes/quiz-polity.html')">Polity Quiz</button>
   </div>
 
-  <div id="error-msg" class="error" style="display: none;">
-    ⚠️ Please open this quiz launcher inside the Telegram app.
-  </div>
+  <iframe id="webframe"></iframe>
 
   <script>
     Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
 
-    if (!Telegram.WebApp.initData || Telegram.WebApp.platform === 'unknown') {
-      // Not inside Telegram WebApp
-      document.getElementById("error-msg").style.display = "block";
-    } else {
-      // Inside Telegram
-      Telegram.WebApp.expand();
-      document.getElementById("quiz-buttons").style.display = "block";
+    function openQuiz(url) {
+      document.getElementById("button-area").style.display = "none";
+      const frame = document.getElementById("webframe");
+      frame.src = url;
+      frame.style.display = "block";
     }
   </script>
 </body>
