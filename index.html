@@ -1,63 +1,297 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Quiz Launcher</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      background: #f4f4f4;
-      text-align: center;
-    }
-    h2 {
-      padding: 20px;
-      margin: 0;
-      background: #0088cc;
-      color: white;
-    }
-    .btn {
-      display: block;
-      margin: 10px auto;
-      padding: 12px 20px;
-      font-size: 18px;
-      background: #0088cc;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      width: 90%;
-      cursor: pointer;
-    }
-    iframe {
-      width: 100%;
-      height: 100vh;
-      border: none;
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ePaper Viewer</title>
+    <style>
+        /* General styles */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        /* Button styling */
+        .btn {
+            background-color: #4caf50; /* Green background */
+            color: #fff; /* White text */
+            cursor: pointer;
+            padding: 10px 20px; /* Adjusted padding for better appearance */
+            margin-bottom: 10px;
+            border: 1px solid #4caf50; /* Border color same as button background */
+            border-radius: 5px; /* Rounded corners */
+            font-size: 14px;
+            font-weight: bold; /* Bold text */
+            transition: background-color 0.3s, border-color 0.3s; /* Smooth color transition */
+        }
+
+        .btn:hover {
+            background-color: #45a049; /* Slightly darker green on hover */
+            border-color: #45a049; /* Match border color with hover background */
+        }
+
+        /* Select and input styling */
+        select, input[type="date"] {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        /* Container and newspaper image styling */
+        .news-container {
+            margin: 20px;
+            text-align: center;
+        }
+
+        .newspaper {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid;
+            margin-bottom: 10px; /* Added margin for spacing */
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
+    <div class="news-container">
+        <div class="controls">
+            <label for="city">Select your city: </label>
+            <select id="city"></select>
+            <label for="date">Select date: </label>
+            <input type="date" id="date">
+            <button class="btn" onclick="fetchNewspaper()">Go</button>
+            <button class="btn" onclick="printNewspaper()">Print</button>
+        </div>
+        <div id="newspaperContainer"></div>
+    </div>
 
-  <div id="button-area">
-    <button class="btn" onclick="openQuiz('https://pdfsdrive1.github.io/uppsc-ro-aro/index.html')">SSC CGL</button>
-    <button class="btn" onclick="openQuiz('https://pdfsdrive1.github.io/uppsc-ro-aro/')">UPPSC RO ARO</button>
-    <button class="btn" onclick="openQuiz('https://pdfsdrive1.github.io/quizzes/quiz-polity.html')">SSC CHSL</button>
-  </div>
+    <script>
+        const monthAbbr = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        
+        const cityOptions = [
+               { value: "262-National", text: "Dainik Jagran National" },
+    { value: "193-Agra", text: "Agra city (UP)" },
+    { value: "259-Agra-dehat", text: "Agra dehat (UP)" },
+    { value: "ct", text: "Aligarh city" },
+    { value: "dt", text: "Aligarh dehat" },
+    { value: "al", text: "Almora" },
+    { value: "am", text: "Ambala" },
+    { value: "258-Ambadkarnagar", text: "Ambedkar nagar (UP)" },
+    { value: "321-Amethi", text: "Amethi (UP)" },
+    { value: "267-Amroha", text: "Amroha (UP)" },
+    { value: "295-Auraiya", text: "Auraiya (UP)" },
+    { value: "16-AYODHYA", text: "Ayodhya (UP)" },
+    { value: "48-Azamgarh", text: "Azamgarh (UP)" },
+    { value: "149-Badaun", text: "Badaun (UP)" },
+    { value: "264-Baghpat", text: "Baghpat (UP)" },
+    { value: "20-Bahraich", text: "Bahraich (UP)" },
+    { value: "49-Ballia", text: "Ballia (UP)" },
+    { value: "285-Balrampur", text: "Balrampur (UP)" },
+    { value: "69-Banda", text: "Banda (UP)" },
+    { value: "257-Barabanki", text: "Barabanki (UP)" },
+    { value: "147-Bareilly-Nagar", text: "Bareilly city (UP)" },
+    { value: "153-Bareilly-Dehat", text: "Bareilly dehat (UP)" },
+    { value: "61-Basti-Edition", text: "Basti (UP)" },
+    { value: "53-Bhadohi-Gyanpur", text: "Bhadohi (UP)" },
+    { value: "bw", text: "Bhiwani" },
+    { value: "252-BIJNORE", text: "Bijnor (UP)" },
+    { value: "270-Bilaspur", text: "Bilaspur (Himachal)" },
+    { value: "34-Bulanshahar", text: "Bulandsahar (Delhi)" },
+    { value: "100-Chamba", text: "Chamba (Himachal)" },
+    { value: "52-Chandauli", text: "Chandauli (UP)" },
+    { value: "cc", text: "Chandigarh city" },
+    { value: "ci", text: "Charkhi Dadri" },
+    { value: "dc", text: "Dehradun city" },
+    { value: "4-Delhi-City", text: "Delhi" },
+    { value: "238-East-Delhi", text: "Delhi East" },
+    { value: "298-South-Delhi", text: "Delhi South" },
+    { value: "239-West-Delhi", text: "Delhi West" },
+    { value: "240-Outer-Delhi", text: "Outer Delhi" },
+    { value: "271-Deoria", text: "Deoria (UP)" },
+    { value: "195-Etah", text: "Etah (UP)" },
+    { value: "70-Etawah", text: "Etawa (UP)" },
+    { value: "243-Faridabad", text: "Faridabad (Delhi)" },
+    { value: "66-Farukhabad", text: "Farrukhabad (UP)" },
+    { value: "ft", text: "Fatehabad" },
+    { value: "67-Fatehpur", text: "Fatehpur (UP)" },
+    { value: "199-Firozabad", text: "Firozabad (UP)" },
+    { value: "gh", text: "Garhwal" },
+    { value: "71-Ghatampur", text: "Ghatampur (UP)" },
+    { value: "242-Ghaziabad", text: "Ghaziabad (Delhi)" },
+    { value: "247-New-Ghaziabad", text: "New Ghaziabad (Delhi)" },
+    { value: "47-Gazipur", text: "Ghazipur (UP)" },
+    { value: "19-Gonda", text: "Gonda-balrampur (UP)" },
+    { value: "56-Gorakhpur-City", text: "Gorakhpur city (UP)" },
+    { value: "312-Gorakhpur-Dehat", text: "Gorakhpur dehat (UP)" },
+    { value: "gn", text: "Greater noida (UP)" },
+    { value: "244-Gurgaon", text: "Gurgaon" },
+    { value: "101-Hamirpur", text: "Hamirpur (Himachal)" },
+    { value: "68-Hamirpur", text: "Hamirpur (UP)" },
+    { value: "273-Hapur", text: "Hapur (Delhi)" },
+    { value: "21-Hardoi", text: "Hardoi (UP)" },
+    { value: "hd", text: "Haridwar" },
+    { value: "ht", text: "Hathras" },
+    { value: "hs", text: "Hisar" },
+    { value: "jl", text: "Jalandhar" },
+    { value: "73-Jalon", text: "Jalaun (UP)" },
+    { value: "25-Jammu", text: "Jammu (Jammu&Kashmir)" },
+    { value: "50-Jaunpur", text: "Jaunpur (UP)" },
+    { value: "jj", text: "Jhajjar" },
+    { value: "jy", text: "Jhansi city" },
+    { value: "jd", text: "Jhansi dehat" },
+    { value: "jn", text: "Jind" },
+    { value: "kt", text: "Kaithal" },
+    { value: "102-Kangra", text: "Kangra (Himachal)" },
+    { value: "74-Kannoj", text: "Kannauj (UP)" },
+    { value: "gm", text: "Kanpur Ghatampur" },
+    { value: "64-Kanpur", text: "Kanpur city (UP)" },
+    { value: "65-Kanpur-Dehat", text: "Kanpur dehat (UP)" },
+    { value: "kn", text: "Karnal" },
+    { value: "309-KASGANJ", text: "Kasganj (UP)" },
+    { value: "26-Kathua", text: "Kathua (Jammu&kashmir)" },
+    { value: "81-Kaushambi", text: "Kaushambi (UP)" },
+    { value: "kw", text: "Kotdwar" },
+    { value: "kl", text: "Kullu" },
+    { value: "277-Kumbh", text: "Kumbh (UP)" },
+    { value: "kk", text: "Kurukshetra" },
+    { value: "58-Kushinagar", text: "Kushinagar (UP)" },
+    { value: "22-Lakhimpur", text: "Lakhimpur Kheri (UP)" },
+    { value: "lt", text: "Lalitpur" },
+    { value: "11-Lucknow", text: "Lucknow city (UP)" },
+    { value: "196-Mainpuri", text: "Mainpuri (UP)" },
+    { value: "99-MANDI", text: "Mandi (Himachal)" },
+    { value: "198-Mathura", text: "Mathura (UP)" },
+    { value: "201-Mathura-Dehat", text: "Mathura (UP)" },
+    { value: "51-Mau", text: "Mau (UP)" },
+    { value: "29-Meerut", text: "Meerut city (UP)" },
+    { value: "30-Meerut", text: "Meerut dehat (UP)" },
+    { value: "249-Mewat", text: "Mewat" },
+    { value: "57-Maharajganj", text: "Mharajgunj (UP)" },
+    { value: "46-Mirjapur", text: "Mirzapur (UP)" },
+    { value: "319-Modinagar", text: "Modinagar (Delhi)" },
+    { value: "ml", text: "Mohali" },
+    { value: "40-Moradabad-City", text: "Moradabad city (UP)" },
+    { value: "41-Moradabad-Dehat", text: "Moradabad dehat (UP)" },
+    { value: "33-Muzaffarnagar", text: "Muzaffarnagar (UP)" },
+    { value: "91-Paonta", text: "Paonta Sahib (Himachal)" },
+    { value: "227-Pauri", text: "Pauri (Uttarakhand)" },
+    { value: "pl", text: "Panipat" },
+    { value: "31-Pilibhit", text: "Pilibhit (UP)" },
+    { value: "305-Pratapgarh", text: "Pratapgarh (UP)" },
+    { value: "pq", text: "Palwal" },
+    { value: "pt", text: "Patiala" },
+    { value: "43-Rampur", text: "Rampur (UP)" },
+    { value: "10-Raibareilly", text: "Raibareilly (UP)" },
+    { value: "88-Rajnagar", text: "Raj nagar (UP)" },
+    { value: "274-Rishikesh", text: "Rishikesh (Uttarakhand)" },
+    { value: "k", text: "Roorkee" },
+    { value: "79-Saharanpur-City", text: "Saharanpur city (UP)" },
+    { value: "82-Saharanpur-Dehat", text: "Saharanpur dehat (UP)" },
+    { value: "285-Sambhal", text: "Sambhal (UP)" },
+    { value: "15-Sitapur", text: "Sitapur (UP)" },
+    { value: "27-Solan", text: "Solan (Himachal)" },
+    { value: "32-Shahjehanpur", text: "Shahjahanpur (UP)" },
+    { value: "97-Shamli", text: "Shamli (UP)" },
+    { value: "sh", text: "Sonepat" },
+    { value: "96-Sundernagar", text: "Sundernagar (Himachal)" },
+    { value: "288-Shravasti", text: "Surwati (UP)" },
+    { value: "190-Siddarthnagar", text: "Sidharthnagar (UP)" },
+    { value: "72-Sultanpur", text: "Sultanpur (UP)" },
+    { value: "89-Tanda", text: "Tanda (UP)" },
+    { value: "59-Varanasi", text: "Varanasi (UP)" },
+    { value: "322-Unnao", text: "Unnao (UP)" },
+    { value: "ud", text: "Udham Singh Nagar" },
+    { value: "9-Udham-Singh-Nagar", text: "Udham Singh Nagar (Uttarakhand)" },
+    { value: "8-Uttar-Kashi", text: "Uttar Kashi (Uttarakhand)" },
+    { value: "28-Udhampur", text: "Udhampur (Jammu&Kashmir)" },
+    { value: "312-Maharajganj", text: "Maharajganj (UP)" },
+    { value: "288-Balrampur", text: "Balrampur (UP)" },
+    { value: "65-Kanpur-Dehat", text: "Kanpur Dehat (UP)" },
+    { value: "276-Shimla", text: "Shimla" }
+];
 
-  <iframe id="webframe"></iframe>
 
-  <script>
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
+        function fetchNewspaper() {
+            const city = document.getElementById('city').value;
+            const date = document.getElementById('date').value;
 
-    function openQuiz(url) {
-      document.getElementById("button-area").style.display = "none";
-      const frame = document.getElementById("webframe");
-      frame.src = url;
-      frame.style.display = "block";
-    }
-  </script>
+            if (!city || !date) {
+                alert('Please select a city and a date.');
+                return;
+            }
+
+            const dateObject = new Date(date);
+            const day = dateObject.getDate().toString().padStart(2, '0');
+            const month = monthAbbr[dateObject.getMonth()];
+            const year = dateObject.getFullYear();
+            const formattedDate = `${day}%20${month}%20${year}`;
+
+            const proxyUrl = 'https://api.allorigins.win/get?url=';
+            const url = `${proxyUrl}${encodeURIComponent(`https://epaperapi.jagran.com/feed.aspx?ecode=${city.split('-')[0]}&edate=${formattedDate}`)}`;
+
+            console.log('Fetching from URL:', url);
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const jsonData = JSON.parse(data.contents);
+                    console.log('Parsed data:', jsonData);
+
+                    if (jsonData && jsonData[0] && jsonData[0].Pages && jsonData[0].Pages.length > 0) {
+                        displayNewspaperPages(jsonData[0].Pages);
+                    } else {
+                        alert('No newspaper image available for the selected date.');
+                        document.getElementById('newspaperContainer').innerHTML = '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching newspaper:', error);
+                    alert('Error fetching newspaper. Please try again later.');
+                });
+        }
+
+        function displayNewspaperPages(pages) {
+            const newspaperContainer = document.getElementById('newspaperContainer');
+            newspaperContainer.innerHTML = '';
+
+            pages.forEach((page) => {
+                const img = document.createElement('img');
+                img.src = page.PageImage;
+                img.alt = `Page ${page.pageno}`;
+                img.className = 'newspaper';
+                newspaperContainer.appendChild(img);
+            });
+        }
+
+        function printNewspaper() {
+            window.print();
+        }
+
+        function initialize() {
+            const citySelect = document.getElementById('city');
+            cityOptions.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.text = option.text;
+                citySelect.appendChild(opt);
+            });
+
+            citySelect.value = cityOptions[0].value; // Default city
+            document.getElementById('date').valueAsDate = new Date(); // Default date
+            
+            fetchNewspaper(); // Fetch for default city and date
+        }
+
+        window.onload = initialize;
+    </script>
 </body>
 </html>
